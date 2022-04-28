@@ -1,12 +1,13 @@
 import time
 
 import pandas as pd
-from common import fetch_page_data
 
-from config import WINE_URL
+from _scratch_functions import fetch_liquor_list, fetch_page_data
 
 pd.set_option('display.max_columns', None)
 pd.set_option('display.max_rows', None)
+
+HOME_URL = 'https://www.my98.com.tw'
 
 
 def main():
@@ -14,19 +15,24 @@ def main():
     is_first_page = True
     start = time.time()
 
-    for wine, url in WINE_URL.items():
+    liquor_list = fetch_liquor_list(HOME_URL)
+
+    for wine, url in liquor_list.items():
         print(
             f'========================================> {wine} <========================================'
         )
 
-        pages, wine_df = fetch_page_data(url, wine_df, is_first_page)
+        liquor_url = HOME_URL + url
+
+        pages, wine_df = fetch_page_data(liquor_url, wine_df, is_first_page)
 
         if pages != None:
             for x in pages.text.splitlines():
                 if x.isnumeric() and pages != '1':
-                    page_url = url + f'?page={pages}'
+                    page_url = liquor_url + f'?page={pages}'
                     wine_df = fetch_page_data(page_url, wine_df,
                                               not is_first_page)
+                    time.sleep(1)
 
         wine_df.reset_index(drop=True, inplace=True)
         print(wine_df)
